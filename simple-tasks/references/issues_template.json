@@ -1,0 +1,44 @@
+[
+  {
+    "id": "TASK-<feature>-001",
+    "type": "task",
+    "title": "[Short imperative title — e.g., Create database migration for sharing permissions]",
+    "description": "[Concise description of what needs to be done. Reference spec/design sections where relevant.]",
+    "acceptance_criteria": [
+      "[Specific, verifiable condition — e.g., Migration creates `workspace_shares` table with columns: id, workspace_id, user_id, permission_level, created_at]",
+      "[Another condition — e.g., Migration is reversible (down migration drops the table)]",
+      "[Another condition — e.g., Existing data is not affected]"
+    ],
+    "status": "todo",
+    "priority": 1,
+    "depends_on": []
+  },
+  {
+    "id": "TASK-<feature>-002",
+    "type": "story",
+    "title": "[Short imperative title — e.g., Implement sharing API endpoint]",
+    "description": "[Reference the relevant spec user story and design section. Be specific about the interface.]",
+    "acceptance_criteria": [
+      "[e.g., POST /api/workspaces/:id/share accepts { user_id, permission_level } and returns 201]",
+      "[e.g., Returns 409 if sharing record already exists for that user + workspace]",
+      "[e.g., Returns 403 if requesting user is not the workspace owner]"
+    ],
+    "status": "todo",
+    "priority": 2,
+    "depends_on": ["TASK-<feature>-001"]
+  },
+  {
+    "id": "TASK-<feature>-003",
+    "type": "task",
+    "title": "[Short imperative title — e.g., Add unit and integration tests for sharing service]",
+    "description": "[Describe what test coverage is needed. Reference the design's testing strategy section.]",
+    "acceptance_criteria": [
+      "[e.g., Unit tests cover permission validation logic (owner, editor, viewer)]",
+      "[e.g., Integration test covers full create-share flow through API]",
+      "[e.g., All tests pass in CI]"
+    ],
+    "status": "todo",
+    "priority": 3,
+    "depends_on": ["TASK-<feature>-002"]
+  }
+]
