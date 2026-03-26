@@ -9,7 +9,7 @@ description: >
   the next task", "work on the next issue", "continue implementation", "pick up where we left off",
   "do the next task", or any request that involves executing work from an issues.json file.
   Also trigger when the user points to a specific task ID to implement.
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Simple Implement — Implement One Task from the Work Queue
