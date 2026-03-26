@@ -10,7 +10,7 @@ AI coding agents are stateless. Each invocation starts from scratch — no memor
 
 Simple Harness solves this with **documents as state**. Instead of relying on conversation history or agent memory, all planning decisions, task breakdowns, and implementation progress are persisted as files in a `docs/<feature-name>/` directory. Any agent — at any time — can read these files and pick up exactly where the last one left off.
 
-This is a form of **harness engineering**: decomposing complex work into specialized phases, with structured artifacts as the handoff mechanism between them. The approach draws from similar principles described in [Anthropic's harness design for long-running apps](https://www.anthropic.com/engineering/harness-design-long-running-apps) and [OpenAI's harness engineering](https://openai.com/index/harness-engineering/).
+This is a form of **harness engineering**: decomposing complex work into specialized phases, with structured artifacts as the handoff mechanism between them. The approach draws from similar principles described in [Anthropic's effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) and [OpenAI's harness engineering](https://openai.com/index/harness-engineering/).
 
 ## Design Principles
 
@@ -74,5 +74,5 @@ simple-spec → simple-design → simple-visual (optional) → simple-tasks → 
 
 The harness pattern — decomposing agent work into specialized phases connected by structured artifacts — is explored in depth by both Anthropic and OpenAI:
 
-- [Harness design for long-running apps](https://www.anthropic.com/engineering/harness-design-long-running-apps) — Anthropic's guide to separating generation from evaluation, using structured artifacts for context handoff, and adapting harness complexity to model capabilities.
+- [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) — Anthropic's guide to enabling agents to work across multiple context windows using an initializer agent that sets up structured state and progress tracking, and a coding agent that makes incremental progress from that foundation.
 - [Harness engineering](https://openai.com/index/harness-engineering/) — OpenAI's take on orchestrating multi-agent systems for complex, extended tasks.
