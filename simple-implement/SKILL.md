@@ -39,7 +39,17 @@ docs/
 
 ## Workflow
 
-### 1. Orient — Read the feature documents
+### 1. Determine invocation mode
+
+Check the prompt you were given for the flag `[INVOCATION_MODE: automated]`.
+
+- **If the flag is present**: you are in **automated mode** (invoked by simple-run). Do not
+  pause for user confirmation at any point. Handle deviations and uncertainties by proceeding
+  and logging your reasoning.
+- **If the flag is absent**: you are in **manual mode** (invoked directly by a user). Follow
+  all confirmation and clarification steps as described in this skill.
+
+### 2. Orient — Read the feature documents
 
 Read all documents in `docs/<feature-name>/` to build a complete picture:
 
@@ -55,7 +65,7 @@ Read all documents in `docs/<feature-name>/` to build a complete picture:
 - If there's exactly one, use it. If there are multiple, ask the user which one.
 - If `index.json` doesn't exist, scan `docs/` for subdirectories containing `issues.json`.
 
-### 2. Pick the next task
+### 3. Pick the next task
 
 Select the task to implement using this algorithm:
 
@@ -77,7 +87,7 @@ but warn if its dependencies aren't met.
 Once you've selected a task, set its `status` to `"in_progress"` in `issues.json` immediately
 (before starting implementation). This signals to other agents that the task is claimed.
 
-### 3. Understand the task
+### 4. Understand the task
 
 Before writing any code:
 
@@ -94,7 +104,7 @@ account for — flag it before implementing. In manual mode, ask the user. In au
 (via simple-run), log the concern in the progress log and make your best judgment, documenting
 your reasoning.
 
-### 4. Implement the change
+### 5. Implement the change
 
 - Apply changes according to the design document's technical approach.
 - Follow existing codebase conventions (naming, structure, patterns, style).
@@ -102,7 +112,7 @@ your reasoning.
   issues — log those as new tasks if they're important.
 - Make all assumptions explicit in code comments where the assumption affects behavior.
 
-### 5. Verify the solution
+### 6. Verify the solution
 
 Verification is not optional. Before marking a task done:
 
@@ -115,7 +125,7 @@ Verification is not optional. Before marking a task done:
 - If any acceptance criterion is NOT met, fix it before proceeding. If you can't fix it,
   don't mark the task as done — set it to `"blocked"` with a `blocked_reason`.
 
-### 6. Update project state
+### 7. Update project state
 
 After successful implementation and verification, update three things:
 
@@ -137,6 +147,8 @@ Use this minimal structure for each entry (append to the bottom of the file):
 - **Summary**: What was done, in 2-3 sentences. Include key decisions made.
 - **Files changed**: List of files created or modified.
 - **Issues discovered**: Any new issues or tasks added (or "None").
+- **Deviation from spec/design**: Description of what differed from spec.md or design.md and
+  why (omit this field if there was no deviation).
 ```
 
 The agent may add additional fields as needed (e.g., `Blockers encountered`, `Decisions made`,
@@ -158,7 +170,7 @@ Newest entries are at the bottom.
 - If this is the first task being implemented for the feature, set status to `"in_progress"`.
 - If all tasks are now `"done"`, set status to `"done"`.
 
-### 7. Summarize
+### 8. Summarize
 
 Provide a concise summary to the user (or to simple-run if orchestrated):
 
@@ -176,13 +188,19 @@ Provide a concise summary to the user (or to simple-run if orchestrated):
 
 - **Don't ask for permission in automated mode.** When invoked by simple-run, implement the
   task and update state without waiting for user confirmation. That's the point of automation.
-  When invoked manually by a user, you may ask for confirmation before implementing if the
-  task is ambiguous or the changes are significant.
+  The one exception is deviations from the spec or design — in that case, proceed anyway,
+  but log your reasoning (see "Respect the design document" above). When invoked manually by
+  a user, ask for confirmation before editing any code if you intend to deviate from the spec
+  or design.
 
 - **Respect the design document.** The design doc represents decisions already made. Don't
   second-guess the architecture or propose alternatives unless you discover a concrete problem
-  (e.g., the proposed approach is technically impossible given the codebase state). If you do
-  deviate, document it in the progress log with clear reasoning.
+  (e.g., the proposed approach is technically impossible given the codebase state). If you
+  intend to implement something that differs from what `spec.md` or `design.md` prescribes —
+  even if you have a good technical reason — follow this rule: **in manual mode, stop and ask
+  the user to confirm the deviation before editing any code**; **in automated mode (via
+  simple-run), proceed with the deviation, implement the task, and log your reasoning in the
+  progress log** using a `Deviation from spec/design` field in the entry.
 
 - **Keep tasks scoped.** If you notice a bug, a missing test, or a refactoring opportunity
   that's outside the current task, add it as a new task in `issues.json` rather than doing it

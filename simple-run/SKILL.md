@@ -65,7 +65,9 @@ For each iteration:
   - The path to the docs folder.
   - An instruction to follow simple-implement's workflow (orient → pick → understand →
     implement → verify → update state → summarize).
-  - An instruction NOT to ask for user confirmation — operate autonomously.
+  - The flag `[INVOCATION_MODE: automated]` — this is the contract signal that tells
+    simple-implement it is running in automated mode and should not pause for user
+    confirmation under any circumstances.
 
 **c) After the sub-agent completes:**
 - Read the updated `issues.json` to confirm the task status changed.
