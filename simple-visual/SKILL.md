@@ -16,10 +16,16 @@ disable-model-invocation: true
 
 # Simple Visual — Write a Visual Design System Document
 
-You are writing a visual design system document. Your job is to produce a `docs/visual.md` file
-that gives an AI coding agent (or a human developer) a clear, complete reference for **how the
-application should look and feel** — the colors, typography, spacing, elevation, component styles,
-and visual guidelines that define the app's identity.
+You are writing a visual design system document following the **DESIGN.md format** — a self-contained,
+plain-text representation of a design system. Your job is to produce a `docs/visual.md` file that
+gives an AI coding agent (or a human developer) a clear, complete reference for **how the application
+should look and feel** — the colors, typography, spacing, shapes, elevation, component styles, and
+visual guidelines that define the app's identity.
+
+The document has two parts:
+1. **YAML frontmatter** — machine-readable design tokens that can be converted to/from `tokens.json`,
+   Figma variables, and Tailwind theme configs
+2. **Markdown body** — human-readable design rationale and guidance
 
 This is an **app-level** document — one per project, shared across all features. It lives at the
 `docs/` root, not inside a feature subfolder, because visual identity applies to the entire
@@ -124,7 +130,46 @@ Use whatever mechanism is available (a structured question tool, a chat message,
 ### 3. Write the visual design system
 
 Read the template at `references/visual_template.md` in this skill's directory. Use it as the
-structural backbone for your output. Replace all bracketed placeholder text with real content.
+structural backbone for your output. The template follows the **DESIGN.md format** — see
+`references/design_md_format.md` for the full specification.
+
+**Document structure:**
+
+The document must begin with YAML frontmatter containing design tokens:
+```yaml
+---
+version: alpha
+name: [App Name]
+colors:
+  primary: "#XXXXXX"
+  ...
+typography:
+  body-md:
+    fontFamily: Inter
+    fontSize: 16px
+    ...
+spacing:
+  md: 16px
+  ...
+rounded:
+  md: 8px
+  ...
+components:
+  button-primary:
+    backgroundColor: "{colors.primary}"
+    ...
+---
+```
+
+Sections must appear in this order (omit irrelevant ones):
+1. Overview (also: "Brand & Style")
+2. Colors
+3. Typography
+4. Layout (also: "Layout & Spacing")
+5. Elevation & Depth (also: "Elevation")
+6. Shapes
+7. Components
+8. Do's and Don'ts
 
 **Key principles:**
 
@@ -132,9 +177,17 @@ structural backbone for your output. Replace all bracketed placeholder text with
   that says "use Inter 400 at 16px/24px for body text" is actionable. Every token should have a
   concrete value and a clear role.
 
-- **Ground everything in real values.** Every color should have a hex code. Every font should
-  have a family name and weight. Every spacing value should be in pixels (or rem). The implementing
-  agent should never have to guess or interpret.
+- **Ground everything in real values.** Every color must be a hex code starting with `#` in sRGB.
+  Every dimension must include a unit (`px`, `em`, `rem`). Typography tokens must specify
+  `fontFamily`, `fontSize`, `fontWeight`, and `lineHeight` at minimum.
+
+- **Use token references.** In the `components` section, reference other tokens using the
+  `{path.to.token}` syntax (e.g., `"{colors.primary}"`, `"{rounded.md}"`). This creates a
+  coherent token graph that tools can resolve.
+
+- **Prose explains, tokens define.** The markdown prose provides context and rationale. The YAML
+  tokens provide the normative values. Prose may use descriptive names ("Midnight Forest Green")
+  that correspond to systematic token names (`primary`).
 
 - **Sections can be omitted if irrelevant.** Not every app needs an iconography section or a
   motion section. Scale the document to the project. But preserve the order of sections that
@@ -206,3 +259,16 @@ Let the user know the visual design system is ready to guide implementation. Pos
   sizing tokens with Tailwind's default scale where possible. If it uses CSS custom properties,
   suggest token names that map directly to `--var` names. Make the design system easy to implement
   in the actual stack.
+
+## Interoperability
+
+The YAML frontmatter follows the [DESIGN.md format](references/design_md_format.md), which is
+designed for interoperability with:
+
+- **tokens.json** — Standard design token format (W3C Design Tokens specification)
+- **Figma variables** — Can be imported/exported as Figma design tokens
+- **Tailwind theme configs** — Maps cleanly to `tailwind.config.js` theme extensions
+- **CSS custom properties** — Token names translate directly to `--token-name` variables
+
+The `{path.to.token}` reference syntax (e.g., `"{colors.primary}"`) allows component tokens to
+reference primitive tokens, creating a coherent token graph that tools can resolve and validate.
