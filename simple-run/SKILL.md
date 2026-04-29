@@ -21,7 +21,7 @@ You do NOT implement code yourself. You delegate each task to a sub-agent that f
 
 ## Folder convention
 
-Same as all simple-* skills:
+Same as all simple-\* skills:
 
 ```
 docs/
@@ -44,12 +44,16 @@ docs/
 - Count total tasks, completed tasks, and remaining tasks. Report this to the user as a
   starting summary (e.g., "Feature `auth` has 12 tasks: 4 done, 8 remaining.").
 - Update `docs/index.json` to set the feature status to `"in_progress"` if not already.
+- **Capture a test baseline.** Run the full test suite and record pass/fail results.
+  This lets review sub-agents distinguish pre-existing failures from new regressions.
+  Refresh the baseline after each successful commit.
 
 ### 2. Loop
 
 For each iteration:
 
 **a) Check for the next available task:**
+
 - Read `issues.json` (fresh each iteration — the sub-agent may have added new tasks).
 - Apply the same task-selection algorithm as simple-implement:
   1. Filter to `status: "todo"`.
@@ -57,6 +61,7 @@ For each iteration:
   3. Pick the lowest `priority` number. Break ties by lowest ID.
 
 **b) If a task is available, spawn a sub-agent:**
+
 - Launch a sub-agent with access to the full project codebase and the docs folder.
 - Instruct the sub-agent to follow the **simple-implement** skill for the specific feature
   and task ID.
@@ -70,14 +75,54 @@ For each iteration:
     confirmation under any circumstances.
 
 **c) After the sub-agent completes:**
+
 - Read the updated `issues.json` to confirm the task status changed.
 - Read the latest entry in `progress-log.md` to understand what happened.
-- If the task is `"done"`, continue to the next iteration.
 - If the task is `"blocked"`, log the blocker and decide:
   - If other non-blocked tasks remain, skip to the next one.
   - If all remaining tasks are blocked, stop and report to the user.
+- If the task is `"done"`, proceed to the review step (d).
 
-**d) Report progress:**
+**d) Review and commit:**
+
+Spawn a **review sub-agent** with the test baseline (from step 1) and the git diff.
+The reviewer evaluates:
+
+- **Correctness** — bugs, edge cases, side effects, collateral impact on related code.
+- **Tests** — coverage added/updated, suite passes locally. Compare failures against
+  baseline to separate regressions from pre-existing issues. Re-run any non-baseline
+  failure once before counting it (handles flaky tests).
+- **Architecture hygiene** — adherence to project conventions (`AGENTS.md`, `CLAUDE.md`).
+  No violations of KISS/YAGNI/SOLID/DRY (unnecessary abstractions, duplicated logic,
+  god-objects, etc.). File/folder organization consistent with existing structure.
+- **Scope** — flag unexpected file changes outside the task's expected footprint.
+
+**Three verdicts** (the dividing line: _will this issue cause downstream tasks to build
+on a broken foundation?_):
+
+1. **Pass** — correct, clean, no new test failures. Commit and continue.
+2. **Pass-with-concerns** — fundamentally correct, safe to commit, but has non-blocking
+   findings (pre-existing test failures, minor style issues, tooling/build failures
+   where code is visibly correct, reasonable-but-flaggable spec interpretations).
+3. **Fail** — correctness issues that would compound: logic bugs in shared code, missing
+   required validations, new test regressions, blatant architecture violations.
+
+**Acting on the verdict:**
+
+- **Pass / Pass-with-concerns:** `git add` + `git commit` referencing the task ID
+  (e.g., `feat(auth): TASK-auth-003 — add session refresh logic`). Refresh the test
+  baseline. For concerns, also log each as a low-priority `"source": "review"` task in
+  `issues.json` and note them in `progress-log.md`.
+- **Fail:** Spawn a **fix sub-agent** with the specific issues to fix. After fixes, re-review.
+  Max 2 fix cycles — if still failing, mark the task `"blocked"`, revert uncommitted
+  changes (`git checkout -- .`), and move on.
+
+**Concern accumulation guardrail:** If unresolved `"source": "review"` tasks in
+`issues.json` exceed **4**, pause the main loop and spawn a cleanup sub-agent to
+address them before continuing or escalate to the user for intervention/instructions.
+
+**e) Report progress:**
+
 - After each completed task, briefly log progress (e.g., "✓ TASK-auth-003 done. 6/12 complete.").
 
 ### 3. Stopping conditions
