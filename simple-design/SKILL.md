@@ -108,6 +108,12 @@ backbone for your output. Replace all bracketed placeholder text with real conte
   what changes. Be explicit about new files, modified files, new database columns, new API endpoints,
   new types/interfaces. The agent should be able to start coding from this section.
 
+- **Specify interfaces, not implementations.** Include type/interface definitions, function signatures,
+  schema diffs, endpoint request/response shapes, and file-level structure. Do *not* include full
+  function bodies or large code blocks — leave the implementation to the coding agent. If you find
+  yourself writing more than ~10 lines of logic inside a code block, you've crossed into implementation
+  territory; pull back and describe the behavior in prose or pseudocode instead.
+
 - **Key decisions need real alternatives.** For each decision, explain what you chose, why, and what
   you considered instead. This isn't bureaucracy — it prevents the implementing agent from second-guessing
   the approach and going down a different path. Good alternatives are ones that a reasonable developer
