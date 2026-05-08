@@ -172,3 +172,8 @@ When the loop ends:
 
 - **Keep the user informed.** Even in automated mode, progress visibility matters. Report
   after each task so the user can monitor and intervene if needed.
+
+- **File size guard.** After each completed task, check whether `issues.json` has ≥ 15 done
+  tasks or `progress-log.md` exceeds 300 lines. If either threshold is hit, notify the user
+  and suggest running `/simple-cleanup` before continuing. Do not hard-stop the loop — the
+  user decides whether to clean up now or later.

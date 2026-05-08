@@ -144,16 +144,25 @@ Use this minimal structure for each entry (append to the bottom of the file):
 ## [TASK-<feature>-NNN] <Task title>
 - **Status**: done | blocked
 - **Date**: YYYY-MM-DD
-- **Summary**: What was done, in 2-3 sentences. Include key decisions made.
-- **Files changed**: List of files created or modified.
-- **Issues discovered**: Any new issues or tasks added (or "None").
-- **Deviation from spec/design**: Description of what differed from spec.md or design.md and
-  why (omit this field if there was no deviation).
+- **Summary**: One sentence on the approach/decision taken. Fold in any deviation from spec/design if relevant.
+- **Issues discovered**: TASK-<feature>-NNN — concise reason; … (or "None")
 ```
 
-The agent may add additional fields as needed (e.g., `Blockers encountered`, `Decisions made`,
-`Notes for next agent`). The five fields above are the minimum. The progress log is append-only —
-never edit or delete previous entries.
+Blocked tasks add one extra field:
+
+```markdown
+- **Blocked reason**: One sentence on why the task cannot proceed.
+```
+
+**Formatting constraints:**
+- Each entry must not exceed **10 lines total** (including the heading line). Cut, don't pad.
+- Summary is 1 sentence. It captures the *why/how* — the git diff already shows the *what*.
+- Issues discovered: ID + one short phrase per issue, semicolon-separated on a single line.
+- No additional fields. If something important doesn't fit in 10 lines, it belongs in a new task in `issues.json`, not the log.
+
+The progress log is append-only — never edit or delete previous entries.
+
+**File size guard:** After appending, check the total line count of `progress-log.md`. If it exceeds **300 lines**, notify the user and suggest running `/simple-cleanup` to compact the log.
 
 If the file doesn't exist yet, create it with a header:
 
@@ -208,6 +217,7 @@ Provide a concise summary to the user (or to simple-run if orchestrated):
 
 - **The progress log is your primary communication channel.** The next agent reads it to
   understand what happened. Write for that audience — clear, factual, specific. No fluff.
+  Each entry is capped at 10 lines; anything that doesn't fit belongs in `issues.json`.
 
 - **Handle failures gracefully.** If you can't complete a task, set its status to `"blocked"`,
   add a `blocked_reason` field, log it in the progress log, and exit. Don't leave the task
