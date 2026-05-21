@@ -1,16 +1,11 @@
 ---
 name: simple-visual
 description: >
-  Write a well-defined visual design system document (docs/visual.md) from documentation, user message,
-  or codebase context. This is an app-level document — one per project, not per feature. Use this skill
-  whenever the user wants to create a consistent design system for their app — covering colors,
-  typography, spacing, components, and visual guidelines — that can be documented and enforced in
-  future development. Trigger on phrases like "create a design system", "define the visual style",
-  "document the look and feel", "visual guidelines", "style guide", "UI design tokens", "design
-  language", or any request that involves establishing or extracting a cohesive visual identity for
-  an application. Also trigger when the user wants to harden an existing codebase's visual patterns
-  into a formal design system, or when they want to define the visual direction before implementation
-  begins.
+  Write an app-level visual design system document (docs/visual.md) — colors, typography, spacing,
+  components, visual guidelines — from documentation, a user message, or codebase context. One per
+  project, not per feature. Use when the user wants to create, extract, or formalize a consistent
+  visual identity for their app. Triggers: "create a design system", "define the visual style",
+  "style guide", "UI design tokens", "design language", "look and feel".
 disable-model-invocation: true
 ---
 
@@ -173,52 +168,41 @@ Sections must appear in this order (omit irrelevant ones):
 
 **Key principles:**
 
-- **Be opinionated, not vague.** A design system that says "use a clean font" is useless. One
-  that says "use Inter 400 at 16px/24px for body text" is actionable. Every token should have a
-  concrete value and a clear role.
+- **Be opinionated, not vague.** "Use a clean font" is useless; "use Inter 400 at 16px/24px for
+  body text" is actionable. Every token needs a concrete value and a clear role.
 
-- **Ground everything in real values.** Every color must be a hex code starting with `#` in sRGB.
-  Every dimension must include a unit (`px`, `em`, `rem`). Typography tokens must specify
-  `fontFamily`, `fontSize`, `fontWeight`, and `lineHeight` at minimum.
+- **Ground everything in real values.** Every color is a `#` hex code in sRGB; every dimension
+  carries a unit (`px`, `em`, `rem`); typography tokens specify `fontFamily`, `fontSize`,
+  `fontWeight`, and `lineHeight` at minimum.
 
-- **Use token references.** In the `components` section, reference other tokens using the
-  `{path.to.token}` syntax (e.g., `"{colors.primary}"`, `"{rounded.md}"`). This creates a
+- **Use token references.** In the `components` section, reference other tokens with
+  `{path.to.token}` syntax (e.g., `"{colors.primary}"`, `"{rounded.md}"`) — this creates a
   coherent token graph that tools can resolve.
 
-- **Prose explains, tokens define.** The markdown prose provides context and rationale. The YAML
-  tokens provide the normative values. Prose may use descriptive names ("Midnight Forest Green")
-  that correspond to systematic token names (`primary`).
+- **Prose explains, tokens define.** Markdown prose gives context and rationale; YAML tokens give
+  the normative values. Prose may use descriptive names ("Midnight Forest Green") that map to
+  systematic token names (`primary`).
 
-- **Sections can be omitted if irrelevant.** Not every app needs an iconography section or a
-  motion section. Scale the document to the project. But preserve the order of sections that
-  are included — consistency across design system documents makes them easier to navigate.
+- **In extraction mode, document what IS, then improve.** Start from the patterns in the
+  codebase; if it uses 5 slightly different grays, pick the best 2-3 and consolidate, noting what
+  you changed and why. Aim for a system the team recognizes as "theirs, but cleaned up."
 
-- **In extraction mode, document what IS, then improve.** Start from the patterns you found in
-  the codebase. If the codebase uses 5 slightly different grays, pick the best 2-3 and consolidate.
-  Note what you changed and why. The goal is a design system the team would recognize as "theirs,
-  but cleaned up."
+- **Component guidance should be project-specific.** Don't enumerate every possible component —
+  cover the ones the app actually uses: a dashboard needs table styling, a chat app needs message
+  bubbles, a landing page needs hero and CTA styling.
 
-- **Component guidance should be specific to this project.** Don't enumerate every possible
-  component. Focus on the components the app actually uses (or will use). A dashboard needs table
-  styling. A chat app needs message bubble styling. A landing page needs hero and CTA styling.
-  Tailor the components section to the project.
-
-- **Do's and Don'ts are guardrails, not theory.** Each item should prevent a concrete mistake
-  an implementing agent might make. "Don't use more than two font weights on a single screen"
-  prevents visual noise. "Do use the primary color only for the single most important action per
-  screen" prevents action dilution. Write these from experience with the specific design.
+- **Do's and Don'ts are guardrails, not theory.** Each item should prevent a concrete mistake:
+  "Don't use more than two font weights on a single screen" prevents visual noise; "Do use the
+  primary color only for the single most important action per screen" prevents action dilution.
 
 - **Accessibility is non-negotiable.** Every design system must address contrast ratios, focus
-  indicators, and touch targets at minimum. These aren't nice-to-haves — they're constraints
-  that the visual choices must satisfy.
+  indicators, and touch targets at minimum — these are constraints the visual choices must satisfy.
 
 - **Color palette should be complete.** Always include semantic/feedback colors (error, warning,
-  success, info) even if the user doesn't mention them. Every app needs them eventually, and
-  defining them upfront prevents ad-hoc choices later.
+  success, info) even if unmentioned — defining them upfront prevents ad-hoc choices later.
 
-- **Think in systems, not pages.** The design system should produce consistent results across
-  any screen in the app, not just the ones the user mentioned. Define tokens and rules that
-  generalize.
+- **Think in systems, not pages.** Define tokens and rules that generalize — the system should
+  produce consistent results on any screen, not just the ones the user mentioned.
 
 ### 4. Save the output
 
@@ -240,35 +224,22 @@ Let the user know the visual design system is ready to guide implementation. Pos
 
 ## Important notes
 
-- This skill produces a **visual design system**, not a technical design or product spec. Focus
-  on *how it looks and feels*, not on data models, API contracts, or business logic. If you catch
-  yourself writing about database schemas or endpoint signatures, you've crossed into design/spec
-  territory — pull back.
-- The depth of the document should match the complexity of the app. A simple landing page doesn't
-  need a 10-section design system. A complex SaaS dashboard does. Scale proportionally.
-- If the user provides very little context (e.g., "make a design system for my app"), don't
-  guess wildly. Ask the clarifying questions from step 2 — the visual direction needs at least
-  some input to be useful.
-- If existing brand guidelines or a Figma file exists, the design system should be consistent
-  with those — not replace them. Position the document as the developer-facing translation of
-  the design team's intent.
-- When extracting from an existing codebase, be honest about inconsistencies. It's more helpful
-  to say "the codebase uses three different border radius values (4px, 6px, 8px); this design
-  system standardizes on 6px and 12px" than to pretend everything was consistent.
-- Consider the framework and tooling in use. If the project uses Tailwind, align spacing and
-  sizing tokens with Tailwind's default scale where possible. If it uses CSS custom properties,
-  suggest token names that map directly to `--var` names. Make the design system easy to implement
-  in the actual stack.
+- This skill produces a **visual design system**, not a technical design or product spec — focus
+  on *how it looks and feels*, not data models, API contracts, or business logic. If you find
+  yourself writing about schemas or endpoint signatures, you've crossed into design/spec
+  territory; pull back.
+- Scale the document to the app — a simple landing page doesn't need a 10-section design system;
+  a complex SaaS dashboard does.
+- If the user gives very little context (e.g., "make a design system for my app"), don't guess
+  wildly — ask the clarifying questions from step 2.
+- If brand guidelines or a Figma file already exist, stay consistent with them rather than
+  replacing them. Position this document as the developer-facing translation of the design
+  team's intent.
+- Match the actual stack: with Tailwind, align spacing and sizing tokens to its default scale;
+  with CSS custom properties, name tokens to map directly onto `--var` names.
 
 ## Interoperability
 
-The YAML frontmatter follows the [DESIGN.md format](references/design_md_format.md), which is
-designed for interoperability with:
-
-- **tokens.json** — Standard design token format (W3C Design Tokens specification)
-- **Figma variables** — Can be imported/exported as Figma design tokens
-- **Tailwind theme configs** — Maps cleanly to `tailwind.config.js` theme extensions
-- **CSS custom properties** — Token names translate directly to `--token-name` variables
-
-The `{path.to.token}` reference syntax (e.g., `"{colors.primary}"`) allows component tokens to
-reference primitive tokens, creating a coherent token graph that tools can resolve and validate.
+The YAML frontmatter follows the [DESIGN.md format](references/design_md_format.md) — see that
+reference for the full token specification. The format maps cleanly to tokens.json (W3C Design
+Tokens), Figma variables, Tailwind theme configs, and CSS custom properties.

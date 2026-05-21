@@ -1,14 +1,12 @@
 ---
 name: simple-implement
 description: >
-  Implement the next task from a feature's issues.json work queue. This skill reads all feature
-  documents (spec, design, visual, issues, progress log) in docs/<feature-name>/, picks the
-  highest-priority unblocked task, implements it, verifies it, and updates the issue status and
-  progress log. Use this skill whenever the user wants to implement a task, work on the next issue,
-  continue building a feature, or make progress on a task list. Trigger on phrases like "implement
-  the next task", "work on the next issue", "continue implementation", "pick up where we left off",
-  "do the next task", or any request that involves executing work from an issues.json file.
-  Also trigger when the user points to a specific task ID to implement.
+  Implement one task from a feature's issues.json work queue: reads the feature's planning docs in
+  docs/<feature-name>/, picks the highest-priority unblocked task (or a task ID the user names),
+  implements and verifies it, then updates issues.json and progress-log.md. Use when the user
+  wants to implement a task, work on the next issue, continue building a feature, or make progress
+  on a task list. Triggers: "implement the next task", "work on the next issue", "continue
+  implementation", "pick up where we left off", "do the next task".
 disable-model-invocation: false
 ---
 
@@ -32,7 +30,9 @@ docs/
   visual.md               ← how it looks (from simple-visual, app-level, optional)
   <feature-name>/
     spec.md               ← what and why (from simple-spec)
+    spec/                 ← optional detail files (present if spec.md was split)
     design.md             ← how, technically (from simple-design)
+    design/               ← optional detail files (present if design.md was split)
     issues.json           ← work queue (from simple-tasks)
     progress-log.md       ← append-only implementation journal (maintained by THIS SKILL)
 ```
@@ -59,6 +59,11 @@ Read all documents in `docs/<feature-name>/` to build a complete picture:
 4. **`issues.json`** — Load the full task list. Understand the dependency graph and priorities.
 5. **`progress-log.md`** (if present) — Read what previous agents/sessions have accomplished.
    Pay special attention to the most recent entries — they tell you the current state.
+
+**On split documents:** If `spec.md` or `design.md` was split, it indexes child detail files
+under a `spec/` or `design/` subfolder. Always read the parent `spec.md` and `design.md` in full
+now — they carry the big-picture context. You don't need to read every child file upfront; note
+which ones exist and read the ones relevant to your task in step 4.
 
 **If the user doesn't specify a feature name:**
 - Check `docs/index.json` for features with status `"in_progress"` or `"tasks_ready"`.
@@ -93,7 +98,10 @@ Before writing any code:
 
 - Re-read the task's `description` and `acceptance_criteria` carefully.
 - Cross-reference with the relevant sections of `spec.md` and `design.md` that the task
-  description references.
+  description references. If the spec or design was split and the task's relevant detail lives
+  in a child file (e.g., `design/<area>.md`), read that child file in full. Read the child for
+  detail *in addition to* the parent, never instead of it — the parent carries the big-picture
+  context the child assumes.
 - Scan the codebase for the files and areas the task will affect. Understand the current state
   of the code — what exists, what patterns are in use, what the tests look like.
 - If the task has a `files_likely_affected` field, start there but don't limit yourself to it.
@@ -109,7 +117,7 @@ your reasoning.
 - Apply changes according to the design document's technical approach.
 - Follow existing codebase conventions (naming, structure, patterns, style).
 - Keep changes scoped to the task. Resist the urge to refactor adjacent code or fix unrelated
-  issues — log those as new tasks if they're important.
+  issues — log those as new tasks in `issues.json` if they're important.
 - Make all assumptions explicit in code comments where the assumption affects behavior.
 
 ### 6. Verify the solution
@@ -191,34 +199,16 @@ Provide a concise summary to the user (or to simple-run if orchestrated):
 
 ## Important notes
 
-- **One task per invocation.** This skill implements exactly one task, then exits. The caller
-  (user or simple-run) decides when to invoke it again. This keeps each session focused and
-  makes the progress log a clean, per-task record.
+- **One task per invocation.** Implement exactly one task, then exit — the caller (user or
+  simple-run) decides when to invoke again. This keeps each session focused and the progress
+  log a clean, per-task record.
 
-- **Don't ask for permission in automated mode.** When invoked by simple-run, implement the
-  task and update state without waiting for user confirmation. That's the point of automation.
-  The one exception is deviations from the spec or design — in that case, proceed anyway,
-  but log your reasoning (see "Respect the design document" above). When invoked manually by
-  a user, ask for confirmation before editing any code if you intend to deviate from the spec
-  or design.
+- **Respect the design document.** `spec.md` and `design.md` represent decisions already made.
+  Don't second-guess the architecture or propose alternatives unless you hit a concrete blocker
+  (e.g., the proposed approach is impossible given the codebase state). If you must deviate:
+  in manual mode, stop and ask the user before editing any code; in automated mode, proceed
+  and note the deviation in the task's progress-log entry (folded into its Summary, per §7b).
 
-- **Respect the design document.** The design doc represents decisions already made. Don't
-  second-guess the architecture or propose alternatives unless you discover a concrete problem
-  (e.g., the proposed approach is technically impossible given the codebase state). If you
-  intend to implement something that differs from what `spec.md` or `design.md` prescribes —
-  even if you have a good technical reason — follow this rule: **in manual mode, stop and ask
-  the user to confirm the deviation before editing any code**; **in automated mode (via
-  simple-run), proceed with the deviation, implement the task, and log your reasoning in the
-  progress log** using a `Deviation from spec/design` field in the entry.
-
-- **Keep tasks scoped.** If you notice a bug, a missing test, or a refactoring opportunity
-  that's outside the current task, add it as a new task in `issues.json` rather than doing it
-  now. This prevents scope creep and keeps the progress log honest.
-
-- **The progress log is your primary communication channel.** The next agent reads it to
-  understand what happened. Write for that audience — clear, factual, specific. No fluff.
-  Each entry is capped at 10 lines; anything that doesn't fit belongs in `issues.json`.
-
-- **Handle failures gracefully.** If you can't complete a task, set its status to `"blocked"`,
-  add a `blocked_reason` field, log it in the progress log, and exit. Don't leave the task
-  `"in_progress"` — that signals to other agents that someone is actively working on it.
+- **Handle failures gracefully.** If you can't complete a task, set its status to `"blocked"`
+  with a `blocked_reason`, log it, and exit. Never leave a task `"in_progress"` — that signals
+  to other agents that someone is actively working on it.

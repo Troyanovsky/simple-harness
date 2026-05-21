@@ -1,13 +1,11 @@
 ---
 name: simple-tasks
 description: >
-  Break down a feature specification and technical design into an ordered list of implementable tasks
-  (issues-<feature-name>.json) inside docs/<feature-name>/. Use this skill whenever the user wants to
-  create a task list, break down a feature into issues, generate a work queue, plan implementation
-  steps, or turn a spec + design into actionable tasks. Trigger on phrases like "break this down",
-  "create tasks", "generate issues", "task list", "work breakdown", "what needs to be built",
-  "plan the work", or any request that involves converting planning documents into an ordered set
-  of implementable units.
+  Break a feature's spec and design into an ordered, dependency-aware task list
+  (docs/<feature-name>/issues.json) — each task small enough for one implementation session. Use
+  when the user wants to break down a feature, generate issues, create a work queue, or plan
+  implementation steps. Triggers: "break this down", "create tasks", "generate issues", "task
+  list", "work breakdown", "plan the work".
 disable-model-invocation: true
 ---
 
@@ -32,7 +30,9 @@ docs/
   visual.md               ← from simple-visual (app-level, optional)
   <feature-name>/
     spec.md               ← from simple-spec
+    spec/                 ← optional detail files (from simple-spec, if spec.md was split)
     design.md             ← from simple-design
+    design/               ← optional detail files (from simple-design, if design.md was split)
     issues.json           ← THIS SKILL'S OUTPUT
     progress-log.md       ← created by simple-implement
 ```
@@ -51,6 +51,9 @@ Start by collecting all available planning documents **before** asking the user 
   stories, acceptance criteria, and edge cases.
 - Read `docs/<feature-name>/design.md` — this tells you *how* to build it: architecture, data
   flow, interfaces, affected components, testing strategy.
+- If `spec.md` or `design.md` indexes child detail files (a `spec/` or `design/` subfolder), read
+  those too. They hold the page-level detail you need to size tasks accurately and to point each
+  task at the right section.
 
 **Optional inputs:**
 - Read `docs/visual.md` if it exists — this is the app-level visual design system. UI/visual tasks need this context.
@@ -126,7 +129,8 @@ the contract that **simple-implement** depends on.
 
 - **Reference the planning docs, don't duplicate them.** Task descriptions should point back to
   specific sections of the spec or design (e.g., "Implement the sharing permissions model
-  described in design.md § Proposed storage changes"). Don't copy entire sections.
+  described in design.md § Proposed storage changes", or a child file such as
+  "design/permissions.md § Schema changes"). Don't copy entire sections.
 
 - **Include setup and testing tasks.** Don't skip the boring stuff: database migrations, config
   changes, test scaffolding, CI updates. These are tasks too and they often block other work.
@@ -173,14 +177,13 @@ Let the user know the task list is ready for implementation. Mention that they c
 
 ## Important notes
 
-- This skill produces a **task breakdown**, not a spec or design. Focus on *what work units to
-  do and in what order*, not on requirements (spec's job) or architecture (design's job). If you
-  catch yourself writing user stories or proposing technical approaches, you've crossed into
-  another skill's territory — reference the planning docs instead.
-- The number of tasks should be proportional to the feature's complexity. A small feature might
-  have 3-5 tasks. A large feature might have 15-25. Don't inflate or compress artificially.
-- If the spec and design disagree on something, flag it as a discrepancy rather than silently
-  picking one. The user needs to resolve it before implementation.
-- All tasks start with `status: "todo"`. Only **simple-implement** changes task status.
-- The `depends_on` field creates a DAG (directed acyclic graph). Don't create circular
-  dependencies. If two tasks are truly co-dependent, merge them into one.
+- This skill produces a **task breakdown**, not a spec or design — focus on *what work units to
+  do and in what order*, not requirements or architecture. If you find yourself writing user
+  stories or proposing technical approaches, reference the planning docs instead.
+- Keep the task count proportional to complexity — a small feature might have 3-5 tasks, a large
+  one 15-25. Don't inflate or compress artificially.
+- If the spec and design disagree, flag it as a discrepancy for the user to resolve rather than
+  silently picking one.
+- All tasks start with `status: "todo"` — only **simple-implement** changes task status.
+- `depends_on` forms a DAG — no circular dependencies. If two tasks are truly co-dependent,
+  merge them into one.

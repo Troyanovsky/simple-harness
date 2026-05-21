@@ -1,11 +1,10 @@
 ---
 name: simple-cleanup
 description: >
-  Compact oversized feature artifacts (issues.json and progress-log.md) to keep them concise and
-  useful for future agents and developers. Use this skill when issues.json has 15 or more done
-  tasks, or progress-log.md exceeds 300 lines. Trigger on phrases like "clean up the issues",
-  "compact the progress log", "archive done tasks", "the files are getting too long", or when
-  simple-implement or simple-run indicates that a file size threshold has been reached.
+  Compact oversized feature artifacts — issues.json and progress-log.md — to keep them useful for
+  future agents. Use when issues.json has 15+ done tasks, progress-log.md exceeds 300 lines, or
+  simple-implement/simple-run reports a size threshold was hit. Triggers: "clean up the issues",
+  "compact the progress log", "archive done tasks", "the files are getting too long".
 disable-model-invocation: true
 ---
 
@@ -115,12 +114,9 @@ Confirm what was done:
 
 ## Important notes
 
-- **Never delete.** Archive task payloads to `issues-archive.json`; compact log entries to a
-  summary block. History is always recoverable.
-- **Stub integrity.** Stubs must preserve `id` and `status` so that `depends_on` resolution
-  in simple-implement and simple-run continues to work correctly.
-- **issues-archive.json is append-only.** Append to the existing array on subsequent runs.
-- **User approval is mandatory.** This skill must never be invoked in automated mode without
-  surfacing the compaction decision to the user first.
-- **Don't compact what's still relevant.** If an older log entry established a constraint or
-  decision that remaining tasks will need, include it in the summary rather than dropping it.
+- **Never delete.** Archive task payloads to `issues-archive.json` and compact log entries to a
+  summary block — history is always recoverable.
+- **Stub integrity.** Stubs must preserve `id` and `status` so `depends_on` resolution in
+  simple-implement and simple-run keeps working.
+- **User approval is mandatory.** Never compact in automated mode — always surface the decision
+  to the user first.

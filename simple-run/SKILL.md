@@ -1,12 +1,11 @@
 ---
 name: simple-run
 description: >
-  Orchestrate the full implementation of a feature by looping through its issues.json task list,
-  invoking simple-implement for each task sequentially until all tasks are done. Use this skill
-  whenever the user wants to auto-complete a feature, run through all tasks, automate implementation,
-  or execute the full task queue without manual intervention. Trigger on phrases like "run all tasks",
-  "auto-implement", "complete the feature", "run through the issues", "implement everything",
-  "execute the task list", or any request that implies looping through tasks automatically.
+  Orchestrate full feature implementation: loop through a feature's issues.json, invoking
+  simple-implement for each task until all are done or a blocker is hit. Use when the user wants
+  to auto-complete a feature, run through all tasks, or execute the task queue without manual
+  intervention. Triggers: "run all tasks", "auto-implement", "complete the feature", "implement
+  everything", "execute the task list".
 disable-model-invocation: true
 ---
 
@@ -29,7 +28,9 @@ docs/
   visual.md               ← app-level visual design (optional)
   <feature-name>/
     spec.md
+    spec/                 ← optional detail files (if spec.md was split)
     design.md
+    design/               ← optional detail files (if design.md was split)
     issues.json           ← work queue
     progress-log.md       ← updated by each sub-agent
 ```
@@ -54,7 +55,8 @@ For each iteration:
 
 **a) Check for the next available task:**
 
-- Read `issues.json` (fresh each iteration — the sub-agent may have added new tasks).
+- Read `issues.json` (fresh each iteration — the sub-agent may have added tasks or changed
+  priorities and dependencies).
 - Apply the same task-selection algorithm as simple-implement:
   1. Filter to `status: "todo"`.
   2. Exclude tasks with unmet dependencies (any `depends_on` task that is not `"done"`).
@@ -62,7 +64,8 @@ For each iteration:
 
 **b) If a task is available, spawn a sub-agent:**
 
-- Launch a sub-agent with access to the full project codebase and the docs folder.
+- Launch a sub-agent — a fresh, stateless session with no memory of prior iterations — with
+  access to the full project codebase and the docs folder.
 - Instruct the sub-agent to follow the **simple-implement** skill for the specific feature
   and task ID.
 - The sub-agent prompt should include:
@@ -151,29 +154,14 @@ When the loop ends:
 
 ## Important notes
 
-- **Strictly sequential.** Run one sub-agent at a time. The next sub-agent needs to see the
-  file changes and state updates from the previous one. Parallelism is a future extension
-  that would require a locking/merge strategy for `issues.json` and `progress-log.md`.
+- **Strictly sequential.** Run one sub-agent at a time — each needs to see the file and state
+  changes from the previous one. Parallelism would require a locking/merge strategy for
+  `issues.json` and `progress-log.md`; it's a future extension.
 
-- **You are the orchestrator, not the implementer.** Do not write code, run tests, or modify
-  files yourself (except `docs/index.json`). All implementation work happens inside sub-agents.
-
-- **Fresh reads each iteration.** Always re-read `issues.json` at the start of each loop
-  iteration. The sub-agent may have added new tasks, changed priorities, or updated
-  dependencies.
-
-- **Respect the stopping conditions.** Don't retry blocked tasks — they're blocked for a
-  reason. Don't force through failures. The progress log and issue statuses are the
-  communication channel — keep them accurate.
-
-- **Sub-agent isolation.** Each sub-agent should be treated as a fresh, stateless session.
-  Pass it all the context it needs (feature name, task ID, docs path) — don't assume it
-  has memory of previous iterations.
-
-- **Keep the user informed.** Even in automated mode, progress visibility matters. Report
-  after each task so the user can monitor and intervene if needed.
+- **You are the orchestrator, not the implementer.** Don't write code, run tests, or modify
+  files yourself (except `docs/index.json`). All implementation happens inside sub-agents.
 
 - **File size guard.** After each completed task, check whether `issues.json` has ≥ 15 done
   tasks or `progress-log.md` exceeds 300 lines. If either threshold is hit, notify the user
-  and suggest running `/simple-cleanup` before continuing. Do not hard-stop the loop — the
+  and suggest running `/simple-cleanup` before continuing. Don't hard-stop the loop — the
   user decides whether to clean up now or later.

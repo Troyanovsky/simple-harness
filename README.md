@@ -41,7 +41,9 @@ docs/
   visual.md                 ← how the app looks (app-level, optional)
   <feature-name>/
     spec.md                 ← what and why
+    spec/                   ← optional detail files (when spec.md is split)
     design.md               ← how, technically
+    design/                 ← optional detail files (when design.md is split)
     issues.json             ← ordered task queue
     progress-log.md         ← append-only implementation journal
 ```

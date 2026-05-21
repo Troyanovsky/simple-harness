@@ -1,14 +1,12 @@
 ---
 name: simple-design
 description: >
-  Write a well-defined technical design document (docs/<feature-name>/design.md) from a spec file, user
-  message, or codebase context. Use this skill whenever the user wants to create a technical design, plan
-  an implementation approach, document architecture decisions, or describe how a feature should be built.
-  Trigger on phrases like "write a design doc", "design this feature", "plan the implementation",
-  "how should we build this", "technical approach", "architecture for", or any request that involves
-  turning a spec or feature idea into a structured, implementation-ready technical design. Also trigger
-  when the user has a spec.md file in a feature folder and wants the corresponding design document, or
-  when they ask for documentation an AI agent would need to implement a feature.
+  Write a technical design document (docs/<feature-name>/design.md) describing how to build a
+  feature — architecture, data flow, interfaces, key decisions, testing strategy — from a spec,
+  user message, or codebase context. Use when the user wants to design a feature, plan an
+  implementation approach, document architecture decisions, or turn a spec.md into its design.
+  Triggers: "write a design doc", "design this feature", "plan the implementation", "how should
+  we build this", "technical approach", "architecture for".
 disable-model-invocation: true
 ---
 
@@ -33,6 +31,8 @@ docs/
   <feature-name>/
     spec.md               ← from simple-spec
     design.md             ← THIS SKILL'S OUTPUT
+    design/               ← optional: detail files when design.md is split
+      <area>.md
     issues.json           ← from simple-tasks
     progress-log.md       ← from simple-implement
 ```
@@ -114,10 +114,9 @@ backbone for your output. Replace all bracketed placeholder text with real conte
   yourself writing more than ~10 lines of logic inside a code block, you've crossed into implementation
   territory; pull back and describe the behavior in prose or pseudocode instead.
 
-- **Key decisions need real alternatives.** For each decision, explain what you chose, why, and what
-  you considered instead. This isn't bureaucracy — it prevents the implementing agent from second-guessing
-  the approach and going down a different path. Good alternatives are ones that a reasonable developer
-  would actually consider, not strawmen.
+- **Key decisions need real alternatives.** For each decision, give what you chose, why, and what
+  you considered instead — this stops the implementing agent from second-guessing the approach.
+  Good alternatives are ones a reasonable developer would actually consider, not strawmen.
 
 - **Data flow tells the story.** The current and proposed data flow sections are often the most valuable
   parts of the design. Walk through a concrete request end-to-end: "User clicks Share → frontend calls
@@ -132,10 +131,42 @@ backbone for your output. Replace all bracketed placeholder text with real conte
   breaking changes, assume they're not acceptable. Document how you preserve compatibility — migration
   scripts, feature flags, fallback behavior, dual-write periods.
 
+- **Write concisely.** Use precise, economical language. Prefer short declarative sentences,
+  bullet lists, tables, and signatures over long prose paragraphs. Cut redundant wording, filler,
+  and restatement — every sentence should give the implementing agent information it doesn't
+  already have. A shorter design that says the same thing is a better design.
+
+**Splitting a long design**
+
+A design document should stay navigable — a reader, human or agent, should be able to load
+`design.md` and grasp the whole feature without drowning in detail.
+
+When the document grows past **~400 lines**, stop and check whether it has natural seams:
+distinct subsystems, pages, components, or API surfaces, each with enough detail to stand on
+its own. If it does, split it. If it's one cohesive change that's simply long, leave it as a
+single file — splitting cohesive content only adds indirection. The line count is a prompt to
+check, not a hard rule; the real trigger is "this covers multiple independently-implementable
+areas, each with substantial depth."
+
+When you split:
+
+- Keep `design.md` as the parent and overview, readable end-to-end. It holds the summary and
+  technical approach, goals and non-goals, current technical state, cross-cutting key decisions,
+  end-to-end data flow, risks, and the testing-strategy summary. Target ~150-300 lines.
+- Move per-area depth into `docs/<feature-name>/design/<area>.md` — one file per subsystem,
+  page, or component, named in kebab-case. Each child holds that area's detailed interfaces,
+  schema diffs, endpoint shapes, and area-specific test cases.
+- Add an **index of the child files** to `design.md`: a short list, each entry naming the file
+  and summarizing what it covers in one line. Without this map, the split isn't navigable.
+- Start each child file with a one-line link back to `design.md` so it's never read fully out
+  of context.
+
 ### 4. Save the output
 
 - Use the same feature name from the spec (or derive a short kebab-case name if working standalone).
 - Save to `docs/<feature-name>/design.md` relative to the project root (create the directory if needed).
+- If you split the design, save the child files under `docs/<feature-name>/design/` and make sure
+  `design.md` indexes them. Otherwise a single `design.md` is the complete output.
 - Update `docs/index.json` to set the feature status to `"design_ready"` (or create the entry if
   working standalone).
 - Tell the user the file path and give a brief summary of the technical approach.
@@ -149,16 +180,13 @@ them so the user can address them before moving to task breakdown.
 
 ## Important notes
 
-- This skill produces a **technical design**, not a product spec. Focus on *how*, not *what* or *why*
-  (the spec covers those). If you catch yourself writing user stories or acceptance criteria, you've
-  crossed into spec territory — pull back.
-- The depth of the design should match the complexity of the change. A simple API endpoint addition
-  doesn't need a 5-page design. A database migration affecting millions of rows does. Scale the
-  document proportionally.
-- If the spec has open questions that affect the design, call them out explicitly rather than guessing.
-  It's better to say "this design assumes X; if Y is true instead, the approach in section Z would
-  need to change" than to silently pick one interpretation.
-- If no spec exists and the user's input is vague, consider suggesting that a specification be written
-  first (via **simple-spec**, or manually). A good design needs clear requirements — trying to design
-  against ambiguous goals leads to rework. That said, this is a suggestion, not a blocker — proceed
-  with what you have if the user wants to move forward.
+- This skill produces a **technical design**, not a product spec — focus on *how*, not *what* or
+  *why* (the spec covers those). If you find yourself writing user stories or acceptance
+  criteria, you've crossed into spec territory; pull back.
+- Scale the design to the change: a simple endpoint addition doesn't need a 5-page design; a
+  migration affecting millions of rows does.
+- If the spec has open questions that affect the design, call them out explicitly rather than
+  guessing — e.g. "this design assumes X; if Y holds instead, section Z would need to change."
+- If no spec exists and the input is vague, consider suggesting a spec be written first (via
+  **simple-spec** or manually) — designing against ambiguous goals leads to rework. This is a
+  suggestion, not a blocker; proceed with what you have if the user wants to.

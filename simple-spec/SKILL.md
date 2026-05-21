@@ -1,13 +1,11 @@
 ---
 name: simple-spec
 description: >
-  Write a well-defined product/feature specification document (docs/<feature-name>/spec.md) from a user's
-  message, input file, or codebase context. Use this skill whenever the user wants to create a spec, define
-  requirements, write acceptance criteria, scope a feature, or document what needs to be built before
-  implementation begins. Trigger on phrases like "write a spec", "create requirements", "define the feature",
-  "scope this out", "what should we build", "spec this", or any request that involves turning a vague idea
-  into a structured, implementation-ready specification. Also trigger when the user provides a feature
-  description and asks for documentation an AI agent would need before coding.
+  Write a product/feature specification (docs/<feature-name>/spec.md) defining what to build and
+  why — scope, user stories, acceptance criteria, edge cases — from a user message, input file, or
+  codebase context. Use when the user wants to spec a feature, define requirements, write
+  acceptance criteria, or scope work before implementation. Triggers: "write a spec", "create
+  requirements", "define the feature", "scope this out", "what should we build", "spec this".
 disable-model-invocation: true
 ---
 
@@ -27,6 +25,8 @@ docs/
   visual.md               ← from simple-visual (app-level, optional)
   <feature-name>/
     spec.md               ← THIS SKILL'S OUTPUT
+    spec/                 ← optional: detail files when spec.md is split
+      <area>.md
     design.md             ← from simple-design
     issues.json           ← from simple-tasks
     progress-log.md       ← from simple-implement
@@ -102,11 +102,34 @@ backbone for your output. The template has placeholder text in brackets — repl
 - **Open questions are honest.** If something is genuinely unresolved, say so. Don't paper over
   uncertainty with vague language.
 
+- **Write concisely.** Use precise, economical language. Prefer short declarative sentences and
+  structured lists over long prose paragraphs. Cut redundant wording, filler, and restatement —
+  every sentence should add information. A shorter spec that conveys the same requirements is a
+  better spec.
+
+**Splitting a long spec**
+
+Most specs fit comfortably in one file. If `spec.md` grows past **~300 lines** — usually because
+the feature spans several independent areas, each with its own cluster of user stories — check
+whether it has natural seams, and split it if it does. The line count is a prompt to check, not
+a hard rule; a cohesive spec that's simply long can stay as one file.
+
+When you split:
+
+- Keep `spec.md` as the parent and overview: summary, problem/why, scope (in and out), current
+  and proposed product state, success criteria, and open questions. Target ~150-250 lines.
+- Move the detailed user stories, acceptance criteria, and story-specific edge cases for each
+  area into `docs/<feature-name>/spec/<area>.md`, one file per area, named in kebab-case.
+- Add an **index of the child files** to `spec.md`, each entry naming the file and summarizing
+  what it covers in one line. Start each child file with a one-line link back to `spec.md`.
+
 ### 4. Save the output
 
 - Derive a short kebab-case feature name from the spec title (e.g., "workspace-sharing", "auth-jwt-migration").
 - Create the directory `docs/<feature-name>/` if it doesn't exist.
 - Save to `docs/<feature-name>/spec.md` relative to the project root.
+- If you split the spec, save the child files under `docs/<feature-name>/spec/` and make sure
+  `spec.md` indexes them. Otherwise a single `spec.md` is the complete output.
 - Update (or create) `docs/index.json` at the project root:
 
 ```json
@@ -132,11 +155,9 @@ complete deliverable.
 
 ## Important notes
 
-- This skill produces a **product spec**, not a technical design. Focus on *what* and *why*, not *how*.
-  If you catch yourself writing about database schemas, API implementations, or code architecture,
-  you've crossed into design territory — pull back.
-- Adapt the template to fit the feature. Not every section will be relevant for every spec. A small
-  bug fix doesn't need 5 user stories. A large feature might need more than the template shows.
-  Use judgment — the template is a guide, not a straitjacket.
-- If the feature is very small (a config change, a one-line fix), say so and produce a proportionally
-  brief spec. Don't inflate.
+- This skill produces a **product spec**, not a technical design — focus on *what* and *why*, not
+  *how*. If you find yourself writing about database schemas, API implementations, or code
+  architecture, you've crossed into design territory; pull back.
+- **Scale to the feature.** Adapt the template — not every section fits every spec, and a small
+  change (a config tweak, a one-line fix) needs only a proportionally brief spec. The template is
+  a guide, not a straitjacket; don't inflate.
