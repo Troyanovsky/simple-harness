@@ -16,7 +16,7 @@ This is a form of **harness engineering**: decomposing complex work into special
 
 **Documents are the contract.** Every skill reads from and writes to well-defined files. The feature name is the linking key. An agent doesn't need memory — it needs a folder.
 
-**Each skill has one job.** Spec defines *what*. Design defines *how*. Tasks define *in what order*. Implement does *one unit of work*. Run *loops*. No skill crosses into another's lane.
+**Each skill has one job.** Spec defines *what*. Design defines *how*. Tasks define *in what order*. Implement does *one unit of work*. Run *loops*. Cleanup *compacts*. Distill *promotes what lasts*. No skill crosses into another's lane.
 
 **Stateless by design.** Every agent invocation is a fresh session. It reads the current state from disk, does its work, writes the updated state back, and exits. The next agent resumes from the files.
 
@@ -32,13 +32,21 @@ This is a form of **harness engineering**: decomposing complex work into special
 | **simple-tasks** | Break down into ordered tasks | `spec.md` + `design.md` | `docs/<feature>/issues.json` |
 | **simple-implement** | Execute one task from the queue | All docs + codebase | Code changes + state updates |
 | **simple-run** | Orchestrate the full loop | `issues.json` | Delegates to simple-implement |
+| **simple-cleanup** | Compact oversized feature artifacts *(maintenance)* | `issues.json` + `progress-log.md` | Compacted files + `issues-archive.json` |
+| **simple-distill** | Promote durable knowledge, then archive the feature *(after completion)* | Completed feature docs + codebase | `docs/architecture.md`, `docs/capabilities.md`, `docs/adr/`, `docs/CHANGELOG.md` |
 
 ## Folder Convention
 
 ```
 docs/
   index.json                ← manifest of all features and their status
-  visual.md                 ← how the app looks (app-level, optional)
+  visual.md                 ← how the app looks (app-level, durable, optional)
+  architecture.md           ← how the app is built, high-level (app-level, durable)
+  capabilities.md           ← what the app does, high-level (app-level, durable)
+  CHANGELOG.md              ← one entry per distilled feature (append-only)
+  adr/                      ← architecture decision records, one per file (immutable)
+  archive/
+    <feature-name>/         ← retired feature folders (moved here by simple-distill)
   <feature-name>/
     spec.md                 ← what and why
     spec/                   ← optional detail files (when spec.md is split)
@@ -50,10 +58,12 @@ docs/
 
 The `<feature-name>` is a short kebab-case token (e.g., `auth`, `csv-export`, `workspace-sharing`) that ties all artifacts together by directory.
 
+The **app-level durable docs** (`visual.md`, `architecture.md`, `capabilities.md`, `CHANGELOG.md`, `adr/`) are the slow-changing, high-level layer that outlives any single feature. Feature folders record a *delta*; the durable docs record the *current shape and why*. The code remains the source of truth for detail — durable docs stay high-level on purpose and point to the code rather than duplicating it.
+
 ## Workflow
 
 ```
-simple-spec → simple-design → simple-visual (optional) → simple-tasks → simple-implement / simple-run
+simple-spec → simple-design → simple-visual (optional) → simple-tasks → simple-implement / simple-run → simple-distill (after completion)
 ```
 
 ### Example A: Manual implementation
@@ -64,6 +74,7 @@ simple-spec → simple-design → simple-visual (optional) → simple-tasks → 
 4. Run **simple-implement** — agent picks task #1, implements it, updates issues + progress log
 5. Run **simple-implement** again — agent picks task #2, reads progress log, continues
 6. Repeat until all tasks are done
+7. Run **simple-distill** — promote the feature's durable decisions and behavior into app-level docs, then archive the feature folder
 
 ### Example B: Automated implementation
 
@@ -71,6 +82,7 @@ simple-spec → simple-design → simple-visual (optional) → simple-tasks → 
 2. Run **simple-design** to write `docs/auth/design.md`
 3. Run **simple-tasks** to write `docs/auth/issues.json`
 4. Run **simple-run** — orchestrator loops through all tasks automatically, spawning a sub-agent for each one, until the feature is complete or a blocker is hit
+5. Run **simple-distill** — once the feature is complete, promote its durable decisions and behavior into app-level docs, then archive the feature folder
 
 ## References
 

@@ -56,6 +56,10 @@ Start by collecting as much information as you can **before** asking the user an
 **From the codebase:**
 - This is where the design skill does its heaviest lifting. You need to understand the existing system
   deeply enough to propose changes that fit naturally.
+- **Durable docs first (if present):** read `docs/architecture.md` for the high-level system shape
+  and `docs/adr/` for past decisions and their rationale. These tell you *why* the system is the way
+  it is and stop you from re-litigating settled decisions — reconcile any high-level claim against
+  the code, which remains the source of truth for detail.
 - Search for and read:
   - **Architecture:** Directory structure, module boundaries, how the app is organized.
   - **Data layer:** Database schemas/models, ORMs, migrations, data access patterns.
@@ -116,7 +120,9 @@ backbone for your output. Replace all bracketed placeholder text with real conte
 
 - **Key decisions need real alternatives.** For each decision, give what you chose, why, and what
   you considered instead — this stops the implementing agent from second-guessing the approach.
-  Good alternatives are ones a reasonable developer would actually consider, not strawmen.
+  Good alternatives are ones a reasonable developer would actually consider, not strawmen. These
+  decisions are also the source **simple-distill** draws on to write durable ADRs once the feature
+  ships, so capture the cross-cutting or hard-to-reverse ones clearly.
 
 - **Data flow tells the story.** The current and proposed data flow sections are often the most valuable
   parts of the design. Walk through a concrete request end-to-end: "User clicks Share → frontend calls

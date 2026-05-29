@@ -51,6 +51,9 @@ Start by collecting as much information as you can **before** asking the user an
   of the system the spec is targeting.
 - Pay attention to naming conventions, architectural patterns, and existing abstractions. These inform
   scope, constraints, and edge cases.
+- If durable app-level docs exist, read them first: `docs/capabilities.md` for what the product
+  already does and `docs/visual.md` for UI conventions. These describe current product truth and
+  keep the spec grounded without re-deriving it from scratch.
 - If there's existing documentation (README, CONTRIBUTING, docs/), skim it for relevant context.
 
 The goal is to arrive at the follow-up question phase already knowing a lot, so you can ask sharp,

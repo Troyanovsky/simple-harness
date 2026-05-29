@@ -151,6 +151,9 @@ When the loop ends:
   - Any tasks that were blocked and why.
   - Any new tasks that were discovered during implementation.
   - Overall feature status.
+- If the feature is now complete and a **simple-distill** skill is available, remind the user they
+  can run it to promote the feature's durable decisions and behavior into app-level docs and archive
+  the feature folder. This is a reminder only — never invoke it automatically.
 
 ## Important notes
 

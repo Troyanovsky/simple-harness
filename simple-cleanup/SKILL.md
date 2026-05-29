@@ -14,6 +14,10 @@ You compact oversized `issues.json` and `progress-log.md` files for a feature. T
 concise and useful without losing history. Nothing is ever deleted — only archived or summarized,
 and always with explicit user approval.
 
+This skill operates *within* a single in-flight feature (compacting its artifacts). It is distinct
+from **simple-distill**, which runs *after* a feature is complete to promote durable knowledge into
+app-level docs and retire the whole feature folder.
+
 ## Folder convention
 
 ```

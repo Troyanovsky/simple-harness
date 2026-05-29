@@ -84,7 +84,9 @@ but warn if its dependencies aren't met.
 
 **If no tasks are available:**
 - If all tasks are `"done"`, congratulate the user — the feature is complete. Update
-  `docs/index.json` to set the feature status to `"done"`.
+  `docs/index.json` to set the feature status to `"done"`. If a **simple-distill** skill is
+  available, remind the user they can run it to promote this feature's durable decisions and
+  behavior into app-level docs and archive the feature folder before its planning docs go stale.
 - If remaining tasks are all `"blocked"`, report the blockers and ask for guidance.
 - If remaining tasks have unmet dependencies but those dependencies aren't blocked, something
   is wrong — flag it.
