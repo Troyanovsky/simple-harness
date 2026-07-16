@@ -39,8 +39,11 @@ docs/
 
 ### 1. Initialize
 
+- Require a clean git worktree before changing state. If uncommitted changes exist, stop and ask
+  the user how to handle them.
 - Identify the feature to work on. If the user specifies a feature name, use it. Otherwise,
   check `docs/index.json` for features with status `"tasks_ready"` or `"in_progress"`.
+  If multiple features qualify, ask the user which one to run.
 - Read `docs/<feature-name>/issues.json` to understand the full scope.
 - Count total tasks, completed tasks, and remaining tasks. Report this to the user as a
   starting summary (e.g., "Feature `auth` has 12 tasks: 4 done, 8 remaining.").
@@ -61,6 +64,8 @@ For each iteration:
   1. Filter to `status: "todo"`.
   2. Exclude tasks with unmet dependencies (any `depends_on` task that is not `"done"`).
   3. Pick the lowest `priority` number. Break ties by lowest ID.
+- If unfinished tasks remain but none is available, stop and report the blocked, missing, or
+  cyclic dependency state.
 
 **b) If a task is available, spawn a sub-agent:**
 
@@ -85,6 +90,7 @@ For each iteration:
   - If other non-blocked tasks remain, skip to the next one.
   - If all remaining tasks are blocked, stop and report to the user.
 - If the task is `"done"`, proceed to the review step (d).
+- If the task is neither `"done"` nor `"blocked"`, stop and report the invalid sub-agent result.
 
 **d) Review and commit:**
 
@@ -100,29 +106,28 @@ The reviewer evaluates:
   god-objects, etc.). File/folder organization consistent with existing structure.
 - **Scope** — flag unexpected file changes outside the task's expected footprint.
 
-**Three verdicts** (the dividing line: _will this issue cause downstream tasks to build
-on a broken foundation?_):
+Reviewers report reproducible correctness, security, test, scope, or architecture findings —
+not preferences, speculative improvements, or unrelated cleanup. Triage findings as:
 
-1. **Pass** — correct, clean, no new test failures. Commit and continue.
-2. **Pass-with-concerns** — fundamentally correct, safe to commit, but has non-blocking
-   findings (pre-existing test failures, minor style issues, tooling/build failures
-   where code is visibly correct, reasonable-but-flaggable spec interpretations).
-3. **Fail** — correctness issues that would compound: logic bugs in shared code, missing
-   required validations, new test regressions, blatant architecture violations.
+- **Defects:** Fix findings that affect the current task or feature in the current review cycle.
+  This includes pre-existing findings that must be corrected for the current task or feature to
+  work correctly. Send all defects to one fix sub-agent, then re-review. Allow 2 fix-agent attempts
+  after the initial review; if a defect remains, abandon the task.
+- **Execution decisions:** The orchestrator resolves scoped, reversible choices using the spec,
+  existing conventions, and the simplest safe option. Include the decision in the fix instructions
+  when code changes are needed.
+- **Principal decisions:** Surface choices that are cross-cutting, long-lasting, expensive to
+  reverse, or materially affect permissions, data, public behavior, business rules, or multiple
+  user journeys. Block the task only when it cannot safely proceed; otherwise choose a conservative,
+  reversible default and retain the decision for the final report.
+- **Pre-existing or unrelated findings:** Stop and escalate critical issues such as security or
+  data-loss risks. Retain other material findings for the final report; ignore minor observations.
 
-**Acting on the verdict:**
-
-- **Pass / Pass-with-concerns:** `git add` + `git commit` referencing the task ID
-  (e.g., `feat(auth): TASK-auth-003 — add session refresh logic`). Refresh the test
-  baseline. For concerns, also log each as a low-priority `"source": "review"` task in
-  `issues.json` and note them in `progress-log.md`.
-- **Fail:** Spawn a **fix sub-agent** with the specific issues to fix. After fixes, re-review.
-  Max 2 fix cycles — if still failing, mark the task `"blocked"`, revert uncommitted
-  changes (`git checkout -- .`), and move on.
-
-**Concern accumulation guardrail:** If unresolved `"source": "review"` tasks in
-`issues.json` exceed **4**, pause the main loop and spawn a cleanup sub-agent to
-address them before continuing or escalate to the user for intervention/instructions.
+Review findings do not create tasks in `issues.json`. If review requires abandoning a task, restore
+only that task's changes to the last committed state before marking it `"blocked"` and logging the
+outcome. Once no defects or blocking decisions remain, stage only the reviewed task and state files,
+inspect the staged diff, then commit referencing the task ID (e.g.,
+`feat(auth): TASK-auth-003 — add session refresh logic`). Refresh the test baseline and continue.
 
 **e) Report progress:**
 
@@ -136,7 +141,10 @@ Stop the loop when any of these conditions is met:
 2. **All remaining tasks are `"blocked"`.** Human intervention is needed.
 3. **A sub-agent fails catastrophically** (crashes, produces no output, or leaves the
    codebase in a broken state). Stop and report.
-4. **The user intervenes.** If running interactively, the user can stop the loop at any time.
+4. **A critical out-of-scope issue is discovered.** Stop and escalate it to the user.
+5. **The queue is invalid.** No task is selectable because dependencies are missing or cyclic,
+   or a sub-agent returns an invalid task status.
+6. **The user intervenes.** If running interactively, the user can stop the loop at any time.
 
 ### 4. Finalize
 
@@ -145,11 +153,14 @@ When the loop ends:
 - Read the final state of `issues.json` and `progress-log.md`.
 - Update `docs/index.json`:
   - If all tasks are done, set feature status to `"done"`.
-  - If stopped due to blockers, leave status as `"in_progress"`.
+  - Otherwise, leave feature status as `"in_progress"`.
 - Provide a final summary to the user:
   - Total tasks completed in this run.
   - Any tasks that were blocked and why.
   - Any new tasks that were discovered during implementation.
+  - Deduplicated principal decisions needing attention, including the default taken and impact
+    of changing it.
+  - Material pre-existing or unrelated findings that warrant engineering follow-up.
   - Overall feature status.
 - If the feature is now complete and a **simple-distill** skill is available, remind the user they
   can run it to promote the feature's durable decisions and behavior into app-level docs and archive
@@ -161,8 +172,9 @@ When the loop ends:
   changes from the previous one. Parallelism would require a locking/merge strategy for
   `issues.json` and `progress-log.md`; it's a future extension.
 
-- **You are the orchestrator, not the implementer.** Don't write code, run tests, or modify
-  files yourself (except `docs/index.json`). All implementation happens inside sub-agents.
+- **You are the orchestrator, not the implementer.** Don't write production code. You may inspect
+  repository state, run orchestration-level verification, manage reviewed commits, and update
+  `docs/index.json`; all implementation happens inside sub-agents.
 
 - **File size guard.** After each completed task, check whether `issues.json` has ≥ 15 done
   tasks or `progress-log.md` exceeds 300 lines. If either threshold is hit, notify the user
