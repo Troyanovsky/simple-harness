@@ -162,6 +162,9 @@ When the loop ends:
     of changing it.
   - Material pre-existing or unrelated findings that warrant engineering follow-up.
   - Overall feature status.
+- If the feature is now complete and a **simple-simplify** skill is available, remind the user they
+  can run it to audit the completed implementation for unnecessary complexity. This is a manual,
+  report-only follow-up — never invoke it automatically.
 - If the feature is now complete and a **simple-distill** skill is available, remind the user they
   can run it to promote the feature's durable decisions and behavior into app-level docs and archive
   the feature folder. This is a reminder only — never invoke it automatically.
