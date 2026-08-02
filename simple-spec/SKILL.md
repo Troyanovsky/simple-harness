@@ -78,8 +78,8 @@ Use whatever mechanism is available (a structured question tool, a chat message,
 
 ### 3. Write the spec
 
-Read the template at `references/spec_template.md` in this skill's directory. Use it as the structural
-backbone for your output. The template has placeholder text in brackets — replace all of it with real content.
+Read the template at `references/spec_template.md` in this skill's directory. Use only applicable
+sections; remove unused headings and placeholders.
 
 **Key principles:**
 
@@ -87,44 +87,35 @@ backbone for your output. The template has placeholder text in brackets — repl
   description. "The system must handle errors" is useless. "The system must return a 409 Conflict when the
   user attempts to create a duplicate workspace name" is useful.
 
-- **User stories drive the spec.** Each user story should have concrete acceptance criteria in
-  GIVEN/WHEN/THEN format. These become the contract that implementation is measured against.
+- **Acceptance criteria are the behavioral contract.** Write concise, testable criteria; use
+  GIVEN/WHEN/THEN when it improves clarity. Do not restate them as functional requirements or
+  edge cases. Include cross-cutting requirements and global edge cases only when they apply to
+  multiple scenarios. Omit story priority and rationale unless material.
 
 - **Scope is a decision, not a description.** The "In scope" and "Out of scope" sections are where you
   make explicit choices. If something is borderline, put it in "Out of scope" with a note about why.
   This prevents scope creep during implementation.
 
-- **Current state matters.** The "Current product state" section grounds the spec in reality. Describe
-  what users actually do today — the agent implementing this needs to understand the starting point
-  to avoid breaking existing behavior.
+- **Current state is selective.** Use codebase research to validate existing product behavior, but
+  document only the current behavior needed to understand the requested change.
 
-- **Edge cases should be actionable.** Each edge case needs an expected behavior, not just a description
-  of the situation. "What if the user submits an empty form?" is incomplete. "Empty form submission →
-  show inline validation errors, do not submit" is complete.
+- **Edge cases should be actionable.** Put each edge case and its expected behavior with the closest
+  scenario unless it affects the whole feature.
 
 - **Open questions are honest.** If something is genuinely unresolved, say so. Don't paper over
   uncertainty with vague language.
 
-- **Write concisely.** Use precise, economical language. Prefer short declarative sentences and
-  structured lists over long prose paragraphs. Cut redundant wording, filler, and restatement —
-  every sentence should add information. A shorter spec that conveys the same requirements is a
-  better spec.
+**Concision**
 
-**Splitting a long spec**
+Research broadly; write only material facts. Keep each fact in one place and link instead of
+repeating content across sections, parent/child documents, or upstream artifacts.
 
-Most specs fit comfortably in one file. If `spec.md` grows past **~300 lines** — usually because
-the feature spans several independent areas, each with its own cluster of user stories — check
-whether it has natural seams, and split it if it does. The line count is a prompt to check, not
-a hard rule; a cohesive spec that's simply long can stay as one file.
+Prefer one file. Split only for independently implementable areas; move detail out of the parent
+rather than summarizing it twice. Keep the complete spec, including children, under ~2,500 words.
+If that is insufficient, split the feature scope.
 
-When you split:
-
-- Keep `spec.md` as the parent and overview: summary, problem/why, scope (in and out), current
-  and proposed product state, success criteria, and open questions. Target ~150-250 lines.
-- Move the detailed user stories, acceptance criteria, and story-specific edge cases for each
-  area into `docs/<feature-name>/spec/<area>.md`, one file per area, named in kebab-case.
-- Add an **index of the child files** to `spec.md`, each entry naming the file and summarizing
-  what it covers in one line. Start each child file with a one-line link back to `spec.md`.
+Before saving, remove content that does not clarify scope, required behavior, a material constraint,
+or verification.
 
 ### 4. Save the output
 
@@ -161,6 +152,3 @@ complete deliverable.
 - This skill produces a **product spec**, not a technical design — focus on *what* and *why*, not
   *how*. If you find yourself writing about database schemas, API implementations, or code
   architecture, you've crossed into design territory; pull back.
-- **Scale to the feature.** Adapt the template — not every section fits every spec, and a small
-  change (a config tweak, a one-line fix) needs only a proportionally brief spec. The template is
-  a guide, not a straitjacket; don't inflate.

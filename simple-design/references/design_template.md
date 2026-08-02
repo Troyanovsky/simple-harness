@@ -1,124 +1,43 @@
 # Design: [Feature / Change Name]
 
-## Summary / Technical approach
-[1-3 short paragraphs.
-Describe the implementation approach at a high level.
-What is the main technical strategy?
-Is this an extension, refactor, replacement, migration, or integration?]
+## Approach
+[Summarize the technical strategy and link to the spec. If no spec exists, state the intent
+and boundaries briefly.]
 
-## Goals
-- [Goal]
-- [Goal]
-- [Goal]
+## Existing touchpoints
+| Component / path | Relevance |
+| --- | --- |
+| [Existing component] | [Why the change touches it] |
 
-## Non-goals
-- [Explicitly not solving]
-- [Explicitly not changing]
-- [Explicitly not optimizing]
+## Change map
+| Component / path | Change | Responsibility / contract impact |
+| --- | --- | --- |
+| [New or modified component] | [Add / modify] | [Purpose and boundary] |
 
-## Current technical state
-[Describe the relevant existing architecture and behavior.]
-
-### Relevant components
-- [Component / service / module]
-- [Component / service / module]
-- [Component / service / module]
-
-### Current data flow
-1. [Step]
-2. [Step]
-3. [Step]
-
-### Current interfaces / contracts
-- [API / event / schema / shared type]
-- [API / event / schema / shared type]
-
-### Current storage model
-- [Table / collection / cache / file / queue]
-- [Table / collection / cache / file / queue]
-
-### Known technical constraints / debt
-- [Constraint or debt]
-- [Constraint or debt]
-
-## Proposed technical state
-[Describe how the system should work after the change.]
-
-### Planned changes
-- [Change]
-- [Change]
-- [Change]
-
-### Proposed data flow
-1. [Step]
-2. [Step]
-3. [Step]
-
-### New or modified interfaces / contracts
-- [New/changed API / event / schema / shared type]
-- [New/changed API / event / schema / shared type]
-
-### Storage / schema changes
-- [Migration or schema change]
-- [Persistence change]
-- [Index / cache / queue change]
-
-### Backward compatibility / migration approach
-- [How compatibility is preserved]
-- [How rollout or migration works]
-- [Any temporary dual-write / fallback / feature flag behavior]
+## Contracts and data flow
+[Optional. Describe only changed interfaces, schemas, storage, and one clarifying end-to-end flow.]
 
 ## Key decisions
+[Optional. Include only consequential decisions.]
 
 ### D-1: [Decision title]
 **Decision:** [What was chosen]  
 **Reason:** [Why this was chosen]  
 **Alternatives considered:** [Other options and why they were not chosen]
 
-### D-2: [Decision title]
-**Decision:** [What was chosen]  
-**Reason:** [Why this was chosen]  
-**Alternatives considered:** [Other options and why they were not chosen]
+## Compatibility / rollout
+[Optional. Describe migration, backward compatibility, observability, and rollback only when relevant.]
 
-### D-3: [Decision title]
-**Decision:** [What was chosen]  
-**Reason:** [Why this was chosen]  
-**Alternatives considered:** [Other options and why they were not chosen]
+## Material risks
+[Optional. List feature-specific risks and mitigations.]
 
-## Risks / trade-offs
-- [Risk or trade-off]
-  - Mitigation: [Mitigation]
-- [Risk or trade-off]
-  - Mitigation: [Mitigation]
-- [Risk or trade-off]
-  - Mitigation: [Mitigation]
+## Verification
+| Spec behavior / change | Test level | Location / utility |
+| --- | --- | --- |
+| [Spec ID or change] | [Unit / integration / end-to-end / manual] | [Test file, fixture, or command] |
 
-## Affected components
-- [Code path / service / module / package / UI surface]
-- [Code path / service / module / package / UI surface]
-- [Code path / service / module / package / UI surface]
+## Assumptions / open questions
+[Optional. Include only items that materially affect implementation.]
 
-## Testing strategy
-
-### Unit tests
-- [What logic should be covered]
-- [What logic should be covered]
-
-### Integration tests
-- [What interaction should be covered]
-- [What interaction should be covered]
-
-### End-to-end / manual validation
-- [What user path or system flow should be validated]
-- [What user path or system flow should be validated]
-
-## Observability / rollout
-[Optional but useful for non-trivial changes.]
-
-### Logging / metrics / alerts
-- [Metric / log / alert]
-- [Metric / log / alert]
-
-### Rollout plan
-- [Feature flag / staged rollout / migration step]
-- [Rollback plan]
+## Detail documents
+[Optional. Link independently implementable areas in one line each; do not repeat their content.]

@@ -95,8 +95,8 @@ Use whatever mechanism is available (a structured question tool, a chat message,
 
 ### 3. Write the design
 
-Read the template at `references/design_template.md` in this skill's directory. Use it as the structural
-backbone for your output. Replace all bracketed placeholder text with real content.
+Read the template at `references/design_template.md` in this skill's directory. Use only applicable
+sections; remove unused headings and placeholders.
 
 **Key principles:**
 
@@ -104,68 +104,48 @@ backbone for your output. Replace all bracketed placeholder text with real conte
   table names. "We'll add a new service" is vague. "We'll add `src/services/workspace-sharing.ts`
   following the pattern established by `src/services/workspace.ts`" is actionable.
 
-- **Current state is your foundation.** The "Current technical state" section should read like a guided
-  tour of the relevant parts of the codebase. An agent reading this should be able to navigate to
-  every file that matters without searching.
+- **Keep current state selective.** List only relevant code touchpoints and why each matters; do not
+  reproduce the codebase survey.
 
-- **Proposed state is your blueprint.** The "Proposed technical state" section is where you describe
-  what changes. Be explicit about new files, modified files, new database columns, new API endpoints,
-  new types/interfaces. The agent should be able to start coding from this section.
+- **Make changes actionable.** Name material new or modified files, contracts, schemas, and endpoints
+  so implementation can begin without guessing.
 
-- **Specify interfaces, not implementations.** Include type/interface definitions, function signatures,
-  schema diffs, endpoint request/response shapes, and file-level structure. Do *not* include full
+- **Specify changed boundaries, not implementations.** Include only material type/interface definitions,
+  function signatures, schema diffs, endpoint shapes, and file-level structure. Do *not* include full
   function bodies or large code blocks — leave the implementation to the coding agent. If you find
   yourself writing more than ~10 lines of logic inside a code block, you've crossed into implementation
   territory; pull back and describe the behavior in prose or pseudocode instead.
 
-- **Key decisions need real alternatives.** For each decision, give what you chose, why, and what
-  you considered instead — this stops the implementing agent from second-guessing the approach.
-  Good alternatives are ones a reasonable developer would actually consider, not strawmen. These
-  decisions are also the source **simple-distill** draws on to write durable ADRs once the feature
-  ships, so capture the cross-cutting or hard-to-reverse ones clearly.
+- **Record only consequential decisions.** Include cross-cutting, hard-to-reverse, or convention-breaking
+  choices and real alternatives. Zero decisions is valid. These decisions are the source
+  **simple-distill** uses for durable ADRs after the feature ships.
 
-- **Data flow tells the story.** The current and proposed data flow sections are often the most valuable
-  parts of the design. Walk through a concrete request end-to-end: "User clicks Share → frontend calls
-  POST /api/workspaces/:id/share → controller validates → service creates sharing record → sends email
-  notification → returns 201." This is what makes the design implementable.
+- **Use data flow when it clarifies boundaries.** Describe one concrete proposed flow; include the
+  current flow only when the contrast matters.
 
-- **Testing strategy should be specific.** Don't just say "unit test the service." Say which behaviors
-  to test, what the tricky cases are, and what existing test utilities to use. The agent should be able
-  to write tests from your descriptions.
+- **Make verification specific.** Map changed behavior or spec IDs to test level, location, and existing
+  utilities without restating the behavior.
 
-- **Backward compatibility is non-negotiable unless stated otherwise.** If the spec doesn't mention
-  breaking changes, assume they're not acceptable. Document how you preserve compatibility — migration
-  scripts, feature flags, fallback behavior, dual-write periods.
+- **Preserve compatibility unless the spec permits breaking changes.** Describe migration or rollout
+  only when needed.
 
-- **Write concisely.** Use precise, economical language. Prefer short declarative sentences,
-  bullet lists, tables, and signatures over long prose paragraphs. Cut redundant wording, filler,
-  and restatement — every sentence should give the implementing agent information it doesn't
-  already have. A shorter design that says the same thing is a better design.
+- **Avoid repeating the spec.** When one exists, reference its goals, scope, acceptance criteria,
+  and success measures. Summarize only constraints needed to explain the design.
 
-**Splitting a long design**
+- **Use one change map.** Do not repeat the same file or component changes in separate planned-change
+  and affected-component sections.
 
-A design document should stay navigable — a reader, human or agent, should be able to load
-`design.md` and grasp the whole feature without drowning in detail.
+**Concision**
 
-When the document grows past **~400 lines**, stop and check whether it has natural seams:
-distinct subsystems, pages, components, or API surfaces, each with enough detail to stand on
-its own. If it does, split it. If it's one cohesive change that's simply long, leave it as a
-single file — splitting cohesive content only adds indirection. The line count is a prompt to
-check, not a hard rule; the real trigger is "this covers multiple independently-implementable
-areas, each with substantial depth."
+Research broadly; write only material facts. Keep each fact in one place and link instead of
+repeating content across sections, parent/child documents, or upstream artifacts.
 
-When you split:
+Prefer one file. Split only for independently implementable areas; move detail out of the parent
+rather than summarizing it twice. Keep the complete design, including children, under ~4,000 words.
+If that is insufficient, split the feature scope.
 
-- Keep `design.md` as the parent and overview, readable end-to-end. It holds the summary and
-  technical approach, goals and non-goals, current technical state, cross-cutting key decisions,
-  end-to-end data flow, risks, and the testing-strategy summary. Target ~150-300 lines.
-- Move per-area depth into `docs/<feature-name>/design/<area>.md` — one file per subsystem,
-  page, or component, named in kebab-case. Each child holds that area's detailed interfaces,
-  schema diffs, endpoint shapes, and area-specific test cases.
-- Add an **index of the child files** to `design.md`: a short list, each entry naming the file
-  and summarizing what it covers in one line. Without this map, the split isn't navigable.
-- Start each child file with a one-line link back to `design.md` so it's never read fully out
-  of context.
+Before saving, remove content that does not clarify the approach, a changed contract, a material
+decision or risk, or verification.
 
 ### 4. Save the output
 
@@ -189,8 +169,6 @@ them so the user can address them before moving to task breakdown.
 - This skill produces a **technical design**, not a product spec — focus on *how*, not *what* or
   *why* (the spec covers those). If you find yourself writing user stories or acceptance
   criteria, you've crossed into spec territory; pull back.
-- Scale the design to the change: a simple endpoint addition doesn't need a 5-page design; a
-  migration affecting millions of rows does.
 - If the spec has open questions that affect the design, call them out explicitly rather than
   guessing — e.g. "this design assumes X; if Y holds instead, section Z would need to change."
 - If no spec exists and the input is vague, consider suggesting a spec be written first (via
