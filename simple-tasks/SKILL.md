@@ -72,14 +72,14 @@ Start by collecting all available planning documents **before** asking the user 
 After reading the planning docs, assess whether you have enough to produce a good breakdown.
 Common gaps:
 
-- **Granularity preference:** "The design describes 3 major components. Should each be one task,
-  or should I break them into smaller units (e.g., data model, API, UI separately)?"
+- **Granularity constraints:** Ask only if session limits or required review/rollout boundaries
+  are unclear and would materially change the breakdown; otherwise use the sizing principles below.
 - **Priority signals:** "The spec has 5 user stories — are any higher priority than others, or
   should I order by technical dependency only?"
 - **Scope confirmation:** "The spec marks X as out-of-scope, but the design references it.
   Should I include it or flag it as a discrepancy?"
-- **Testing expectations:** "Should testing be a separate task per component, or bundled into
-  each implementation task?"
+- **Testing expectations:** Clarify missing coverage or validation requirements; keep related
+  tests with their implementation by default.
 
 Keep it to one round of 1-4 focused questions. If you can make reasonable choices from the
 planning docs, do so — you can note assumptions in the task descriptions.
@@ -88,6 +88,8 @@ planning docs, do so — you can note assumptions in the task descriptions.
 
 Read the template at `references/issues_template.json` in this skill's directory. Use it as the
 structural guide for your output.
+Its examples illustrate the schema, not required task boundaries: apply the sizing principles
+below rather than automatically separating migrations, implementation, and tests.
 
 **Required fields for every task:**
 
@@ -119,9 +121,12 @@ the contract that **simple-implement** depends on.
   first. Tasks that depend on others come after their dependencies. The `priority` field is the
   tiebreaker when dependencies are equal.
 
-- **Each task should be completable in one session.** If a task feels like it would take more
-  than a few hours of focused work, break it into smaller pieces. An agent should be able to
-  pick up a single task, implement it, verify it, and move on.
+- **Size tasks around cohesive changes.** Each task should have a clear, independently
+  verifiable outcome that an agent can implement and verify confidently in one session. Keep
+  closely related implementation and tests together. Do not create separate tasks solely because
+  changes touch different files or technical layers, but do not force an entire user story into
+  one task. Split when work involves distinct outcomes, meaningful prerequisites, or too much
+  scope for one session.
 
 - **Tasks should be independently verifiable.** Each task's acceptance criteria should be
   testable without completing subsequent tasks. This means the feature builds up incrementally —
@@ -132,17 +137,19 @@ the contract that **simple-implement** depends on.
   described in design.md § Proposed storage changes", or a child file such as
   "design/permissions.md § Schema changes"). Don't copy entire sections.
 
-- **Include setup and testing tasks.** Don't skip the boring stuff: database migrations, config
-  changes, test scaffolding, CI updates. These are tasks too and they often block other work.
+- **Include necessary setup and testing work.** Account for database migrations, config changes,
+  test scaffolding, and CI updates within the relevant task. Make them separate tasks when they
+  are meaningful prerequisites or need independent validation or rollout.
 
 - **Be specific about what "done" means.** "Implement the API endpoint" is vague. "Implement
   POST /api/workspaces/:id/share — validates input, creates sharing record, returns 201 with
   sharing details. Returns 409 if already shared with that user." is verifiable.
 
 - **Map user stories to tasks, but don't force a 1:1 mapping.** A single user story might
-  require multiple tasks (data model + API + UI). Multiple simple stories might be one task.
-  The design document's "affected components" and "planned changes" sections are usually the
-  best guide for task boundaries.
+  require multiple tasks; multiple simple stories might be one task. For example, sharing could
+  have one task for storage, API, permission checks, and tests, and another for the sharing UI,
+  API integration, and UI verification. Use the design's affected components and planned changes
+  to identify scope, and the sizing principles above to choose task boundaries.
 
 ### 4. Save the output
 
@@ -180,8 +187,8 @@ Let the user know the task list is ready for implementation. Mention that they c
 - This skill produces a **task breakdown**, not a spec or design — focus on *what work units to
   do and in what order*, not requirements or architecture. If you find yourself writing user
   stories or proposing technical approaches, reference the planning docs instead.
-- Keep the task count proportional to complexity — a small feature might have 3-5 tasks, a large
-  one 15-25. Don't inflate or compress artificially.
+- Keep the task count proportional to complexity, with no target or minimum count. A small
+  feature may need only one task; larger features should split at meaningful boundaries.
 - If the spec and design disagree, flag it as a discrepancy for the user to resolve rather than
   silently picking one.
 - All tasks start with `status: "todo"` — only **simple-implement** changes task status.
